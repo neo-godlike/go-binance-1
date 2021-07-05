@@ -26,8 +26,8 @@ func (s *PremiumIndexService) Do(ctx context.Context, opts ...RequestOption) (re
 		endpoint: "/fapi/v1/premiumIndex",
 		secType:  secTypeNone,
 	}
-	if s.symbol != nil {
-		r.setParam("symbol", *s.symbol)
+	if s.symbol != "" {
+		r.setParam("symbol", s.symbol)
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	data = common.ToJSONList(data)
