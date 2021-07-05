@@ -14,8 +14,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/neo-godlike/go-binance-1/v2/common"
 	"github.com/bitly/go-simplejson"
+	"github.com/neo-godlike/go-binance-1/v2/common"
 )
 
 // SideType define side type of order
@@ -515,4 +515,8 @@ func (c *Client) NewChangePositionModeService() *ChangePositionModeService {
 // NewGetPositionModeService init get position mode service
 func (c *Client) NewGetPositionModeService() *GetPositionModeService {
 	return &GetPositionModeService{c: c}
+}
+
+func (c *Client) NewGetIndexInfoService() *GetIndexInfoService {
+	return &GetIndexInfoService{c: c}
 }
