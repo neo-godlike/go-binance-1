@@ -20,21 +20,24 @@ func (s *PremiumIndexService) Symbol(symbol string) *PremiumIndexService {
 }
 
 // Do send request
-func (s *PremiumIndexService) Do(ctx context.Context, opts ...RequestOption) (res *PremiumIndex, err error) {
+func (s *PremiumIndexService) Do(ctx context.Context, opts ...RequestOption) (res []*PremiumIndex, err error) {
 	r := &request{
 		method:   "GET",
 		endpoint: "/fapi/v1/premiumIndex",
 		secType:  secTypeNone,
 	}
-	r.setParam("symbol", s.symbol)
-	data, err := s.c.callAPI(ctx, r, opts...)
-	if err != nil {
-		return nil, err
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
 	}
-	res = new(PremiumIndex)
+	data, err := s.c.callAPI(ctx, r, opts...)
+	data = common.ToJSONList(data)
+	if err != nil {
+		return []*PremiumIndex{}, err
+	}
+	res = make([]*PremiumIndex, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return nil, err
+		return []*PremiumIndex{}, err
 	}
 	return res, nil
 }
