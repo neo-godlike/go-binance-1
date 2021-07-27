@@ -355,11 +355,65 @@ type WsTradeEvent struct {
 	Placeholder   bool   `json:"M"` // add this field to avoid case insensitive unmarshaling
 }
 
+type WsUserDataEvent struct {
+	Event            string          `json:"e"`
+	Time             int64           `json:"E"`
+	UpdateTime       int64           `json:"u"`
+	Balance          []WsBalance     `json:"B"`
+	Symbol           string          `json:"s"`
+	ClientOrderId    string          `json:"c"`
+	Side             string          `json:"S"`
+	OrderType        string          `json:"o"`
+	Force            string          `json:"f"`
+	Qty              string          `json:"q"`
+	Price            string          `json:"p"`
+	LimitPrice       string          `json:"P"`
+	F                string          `json:"F"`
+	OCOListId        int64           `json:"g"`
+	CancelId         string          `json:"C"`
+	ExcuteType       string          `json:"x"`
+	Status           OrderStatusType `json:"X"`
+	RefuseRason      string          `json:"r"`
+	OrderId          int64           `json:"i"`
+	LastQty          string          `json:"l"`
+	CumulativeQty    string          `json:"z"`
+	LastPrice        string          `json:"L"`
+	Fee              string          `json:"n"`
+	FeeType          string          `json:"N"`
+	DealTime         int64           `json:"T"`
+	DealID           int64           `json:"t"`
+	NULL             int64           `json:"I"`
+	OnBook           bool            `json:"w"`
+	IsMaker          bool            `json:"m"`
+	NULL2            bool            `json:"M"`
+	OrderTime        int64           `json:"O"`
+	CumulativeAmount string          `json:"Z"`
+	LastAmount       string          `json:"Y"`
+	QuoteOrderQty    string          `json:"Q"`
+}
+
+type WsBalance struct {
+	Asset string `json:"a"`
+	Free  string `json:"f"`
+	Lock  string `json:"l"`
+}
+
+type WsUserDataHandler func(event *WsUserDataEvent)
+
 // WsUserDataServe serve user data handler with listen key
-func WsUserDataServe(listenKey string, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
 	endpoint := fmt.Sprintf("%s/%s", getWsEndpoint(), listenKey)
 	cfg := newWsConfig(endpoint)
-	return wsServe(cfg, handler, errHandler)
+	wsHandler := func(message []byte) {
+		event := new(WsUserDataEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
 }
 
 // WsMarketStatHandler handle websocket that push single market statistics for 24hr
